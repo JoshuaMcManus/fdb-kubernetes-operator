@@ -326,13 +326,13 @@ func (client *CliAdminClient) ExcludeInstances(addresses []string) error {
 	if version.HasNonBlockingExcludes() {
 		_, err = client.runCommand(cliCommand{
 			command: fmt.Sprintf(
-				"exclude no_wait %s",
+				"exclude no_wait FORCE %s",
 				strings.Join(removeAddressFlags(addresses), " "),
 			)})
 	} else {
 		_, err = client.runCommand(cliCommand{
 			command: fmt.Sprintf(
-				"exclude %s",
+				"exclude FORCE %s",
 				strings.Join(removeAddressFlags(addresses), " "),
 			)})
 	}
@@ -366,7 +366,7 @@ func (client *CliAdminClient) CanSafelyRemove(addresses []string) ([]string, err
 	if version.HasNonBlockingExcludes() {
 		addressesWithoutFlags := removeAddressFlags(addresses)
 		output, err := client.runCommand(cliCommand{command: fmt.Sprintf(
-			"exclude no_wait %s",
+			"exclude no_wait FORCE %s",
 			strings.Join(addressesWithoutFlags, " "),
 		)})
 		if err != nil {
@@ -383,7 +383,7 @@ func (client *CliAdminClient) CanSafelyRemove(addresses []string) ([]string, err
 		return remaining, nil
 	}
 	_, err = client.runCommand(cliCommand{command: fmt.Sprintf(
-		"exclude %s",
+		"exclude FORCE %s",
 		strings.Join(removeAddressFlags(addresses), " "),
 	)})
 	return nil, err
