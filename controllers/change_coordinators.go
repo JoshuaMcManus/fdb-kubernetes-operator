@@ -23,6 +23,7 @@ package controllers
 import (
 	ctx "context"
 	"fmt"
+	"os"
 	"time"
 
 	fdbtypes "github.com/FoundationDB/fdb-kubernetes-operator/api/v1beta1"
@@ -70,7 +71,8 @@ func (c ChangeCoordinators) Reconcile(r *FoundationDBClusterReconciler, context 
 		return false, err
 	}
 
-	if !hasValidCoordinators {
+	if !hasValidCoordinators || os.Getenv("FORCE_COORDINATOR_CHANGE") == "true" {
+		os.Setenv("FORCE_COORDINATOR_CHANGE", "false")
 		lockClient, err := r.getLockClient(cluster)
 		if err != nil {
 			return false, err
