@@ -18,8 +18,12 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io"
+	"log"
+	"net/http"
 	"os"
+	"runtime/pprof"
 
 	appsv1beta1 "github.com/FoundationDB/fdb-kubernetes-operator/api/v1beta1"
 	"github.com/FoundationDB/fdb-kubernetes-operator/controllers"
@@ -186,11 +190,29 @@ func main() {
 
 	// +kubebuilder:scaffold:builder
 
+	// Start profiling
+	http.HandleFunc("/", test0)
+	log.Println(http.ListenAndServe("localhost:8080", nil))
+
+	f, err := os.Create("/memprofile.proto")
+	if err != nil {
+		log.Println("could not create memory profile: ")
+	}
+	if err := pprof.WriteHeapProfile(f); err != nil {
+		log.Println("could not write memory profile: ", err)
+	}
+	f.Close()
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func test0(w http.ResponseWriter, r *http.Request) {
+	// Handles top-level page.
+	fmt.Fprintf(w, "You are on the home page")
 }
 
 // startCache manually starts the controller manager cache.
