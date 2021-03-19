@@ -106,6 +106,24 @@ func main() {
 		),
 	)
 
+	// Start profiling
+	setupLog.Info("starting server")
+	r := http.NewServeMux()
+	r.HandleFunc("/", serveHTTP)
+
+	r.Handle("/debug/", http.DefaultServeMux)
+	http.ListenAndServe(":8080", r)
+	setupLog.Info("after starting")
+
+	f, err := os.Create("/memprofile.proto")
+	if err != nil {
+		setupLog.Info("could not create memory profile: ")
+	}
+	if err := pprof.WriteHeapProfile(f); err != nil {
+		setupLog.Info("could not write memory profile: ", err)
+	}
+	f.Close()
+
 	controllers.DefaultCLITimeout = cliTimeout
 
 	options := ctrl.Options{
@@ -191,25 +209,7 @@ func main() {
 
 	// +kubebuilder:scaffold:builder
 
-	// Start profiling
-	setupLog.Info("Starting server")
-	r := http.NewServeMux()
-	r.HandleFunc("/", serveHTTP)
-
-	r.Handle("/debug/", http.DefaultServeMux)
-	http.ListenAndServe(":8080", r)
-	setupLog.Info("After starting")
-
-	f, err := os.Create("/memprofile.proto")
-	if err != nil {
-		setupLog.Info("could not create memory profile: ")
-	}
-	if err := pprof.WriteHeapProfile(f); err != nil {
-		setupLog.Info("could not write memory profile: ", err)
-	}
-	f.Close()
-
-	setupLog.Info("starting manager")
+	setupLog.Info("starting manager - here")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
